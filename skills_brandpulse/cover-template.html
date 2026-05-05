@@ -1,0 +1,208 @@
+<!doctype html>
+<!--
+================================================================================
+  BRANDPULSE · 小红书封面模板（Frame 02 · L-Bracket Half Frame）
+  AI INSTRUCTIONS — READ THIS BLOCK BEFORE EDITING
+================================================================================
+
+  PURPOSE:
+    This file is a fixed cover template for Xiaohongshu (3:4, 1200×1600 px).
+    The user wants every post to look visually unified.
+
+  YOUR JOB AS AN AI:
+    Given ONE input image from the user, produce a finished cover by changing
+    ONLY the photo source. Everything else (frame, logo, typography, spacing)
+    is locked and must NOT be modified.
+
+  HOW TO USE:
+    1. Take the user's image and write/copy it to:  assets/photo.jpg
+       (overwrite if exists)
+    2. Update <img id="cover-photo"> 's src attribute to point at it.
+    3. Do NOT touch:
+        - the L-bracket corners (.br-tl, .br-br)
+        - the gradient veil (.veil)
+        - the logo lockup (.lockup)
+        - any CSS variable in :root
+        - the aspect-ratio (3/4) or canvas size
+    4. Render the finished cover at 1200×1600 for export.
+
+  ADJUSTABLE KNOBS (only if user explicitly asks):
+    All knobs are CSS custom properties on :root. Change the value, do not
+    rewrite the rules. Documented inline below.
+
+  EXPORT:
+    The cover lives inside <div id="cover-canvas">. Screenshot just that
+    element at 1200×1600 to produce the final PNG/JPG.
+
+================================================================================
+-->
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>BrandPulse · Cover Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     LOCKED DESIGN TOKENS — do not change unless user asks.
+     These are the only knobs an AI should ever consider touching.
+     ============================================================ */
+  :root{
+    /* Canvas */
+    --canvas-w: 1200px;          /* export width  */
+    --canvas-h: 1600px;          /* export height (3:4) */
+
+    /* L-bracket corners */
+    --bracket-inset: 36px;       /* distance from canvas edge */
+    --bracket-size: 180px;       /* leg length of the L */
+    --bracket-thickness: 3px;    /* stroke width */
+    --bracket-color: #ffffff;
+
+    /* Gradient veil for legibility */
+    --veil-top: 0.35;            /* opacity of top dark band */
+    --veil-bottom: 0.55;         /* opacity of bottom dark band */
+
+    /* Logo lockup */
+    --logo-size: 56px;
+    --logo-gap: 14px;            /* gap between logo and wordmark */
+    --logo-inset-x: 56px;        /* distance from right edge */
+    --logo-inset-y: 56px;        /* distance from bottom edge */
+    --wordmark-size: 26px;
+    --wordmark-color: #ffffff;
+    --wordmark-font: 'Cormorant Garamond', serif;
+    --wordmark-text: 'Brandpulse';
+
+    /* Optional top-left tag — leave empty string to hide */
+    --tag-text: '';              /* e.g. 'Brandpulse · Journal' */
+    --tag-color: #ffffff;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#1a1a1a;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px}
+
+  /* ============================================================
+     COVER CANVAS — exported as the final image.
+     Screenshot this single element at native 1200×1600.
+     ============================================================ */
+  #cover-canvas{
+    width: var(--canvas-w);
+    height: var(--canvas-h);
+    position: relative;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 40px 80px -30px rgba(0,0,0,.6);
+    /* For preview only — scaled down to fit the screen */
+    transform: scale(min(calc((100vw - 80px) / 1200), calc((100vh - 80px) / 1600)));
+    transform-origin: center;
+  }
+
+  /* The user's photo. AI: change ONLY the src on #cover-photo. */
+  #cover-photo{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;object-position:center;
+    display:block;
+  }
+
+  /* Gradient protection — keeps logo + tag readable on any photo */
+  .veil{
+    position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(
+      180deg,
+      rgba(0,0,0,var(--veil-top)) 0%,
+      rgba(0,0,0,0) 26%,
+      rgba(0,0,0,0) 62%,
+      rgba(0,0,0,var(--veil-bottom)) 100%
+    );
+  }
+
+  /* L-bracket corners — top-left and bottom-right */
+  .bracket{position:absolute;pointer-events:none;width:var(--bracket-size);height:var(--bracket-size)}
+  .br-tl{
+    top:var(--bracket-inset);left:var(--bracket-inset);
+    border-top:var(--bracket-thickness) solid var(--bracket-color);
+    border-left:var(--bracket-thickness) solid var(--bracket-color);
+  }
+  .br-br{
+    bottom:var(--bracket-inset);right:var(--bracket-inset);
+    border-bottom:var(--bracket-thickness) solid var(--bracket-color);
+    border-right:var(--bracket-thickness) solid var(--bracket-color);
+  }
+
+  /* Optional top-left tag (hidden when --tag-text is empty) */
+  .tag{
+    position:absolute;
+    top:calc(var(--bracket-inset) + 22px);
+    left:calc(var(--bracket-inset) + 22px);
+    color:var(--tag-color);
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;letter-spacing:0.28em;text-transform:uppercase;
+  }
+  .tag::before{
+    content: var(--tag-text);
+  }
+  .tag:empty,
+  .tag::before{
+    /* hide entirely if empty string */
+  }
+
+  /* Logo lockup — bottom right, fixed forever */
+  .lockup{
+    position:absolute;
+    right:var(--logo-inset-x);
+    bottom:var(--logo-inset-y);
+    display:flex;align-items:center;gap:var(--logo-gap);
+  }
+  .lockup img{
+    width:var(--logo-size);height:var(--logo-size);
+    object-fit:cover;border-radius:50%;
+    /* Normalise the logo into pure white regardless of source */
+    filter:grayscale(1) brightness(1.5) contrast(1.1);
+  }
+  .lockup .wordmark{
+    color:var(--wordmark-color);
+    font-family:var(--wordmark-font);
+    font-weight:500;
+    font-size:var(--wordmark-size);
+    letter-spacing:0.04em;
+    line-height:1;
+  }
+</style>
+</head>
+<body>
+
+<!--
+  ============================================================
+  COVER CANVAS — the only thing exported.
+  AI: replace the src of #cover-photo. Leave everything else alone.
+  ============================================================
+-->
+<div id="cover-canvas">
+
+  <!-- 1. THE PHOTO (the only swappable element) -->
+  <img id="cover-photo"
+       src="assets/photo.jpg"
+       alt="cover"
+       data-ai-role="user-photo"
+       data-ai-instruction="Replace src with the user's image. Do not modify any other attribute.">
+
+  <!-- 2. PROTECTION VEIL (locked) -->
+  <div class="veil" data-ai-role="locked"></div>
+
+  <!-- 3. L-BRACKETS (locked, signature element) -->
+  <div class="bracket br-tl" data-ai-role="locked"></div>
+  <div class="bracket br-br" data-ai-role="locked"></div>
+
+  <!-- 4. OPTIONAL TAG — only visible if --tag-text is non-empty -->
+  <div class="tag" data-ai-role="optional"></div>
+
+  <!-- 5. LOGO LOCKUP (locked) -->
+  <div class="lockup" data-ai-role="locked">
+    <img src="assets/logo.jpg" alt="Brandpulse logo">
+    <div class="wordmark">Brandpulse</div>
+  </div>
+
+</div>
+
+</body>
+</html>

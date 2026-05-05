@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>XHS Cover Studio · 选模板 → 上传 → 下载</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Geist:wght@400;500;600;700&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: oklch(98% 0.005 240);
+    --panel: oklch(100% 0 0);
+    --ink: oklch(18% 0.01 240);
+    --ink-2: oklch(40% 0.01 240);
+    --ink-3: oklch(58% 0.01 240);
+    --line: oklch(92% 0.005 240);
+    --line-2: oklch(86% 0.005 240);
+    --brand-bupa: #0E5BA8;
+    --brand-bp: #1a1a1a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Geist","Noto Sans SC",-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"JetBrains Mono",monospace}
+  .serif{font-family:"Instrument Serif",serif;font-style:italic}
+
+  header{padding:22px 32px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:24px;background:var(--panel);flex-wrap:wrap}
+  .crumbs{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-3);letter-spacing:.04em}
+  .crumbs .step{padding:4px 10px;border-radius:999px;background:var(--ink);color:#fff;font-weight:500}
+  .crumbs .dot{width:4px;height:4px;border-radius:50%;background:var(--ink-3)}
+  .h1{font-size:22px;font-weight:600;letter-spacing:-0.02em}
+  .h1 em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400}
+
+  main{max-width:1280px;margin:0 auto;padding:28px 32px 60px}
+
+  .picker{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+  @media(max-width:760px){.picker{grid-template-columns:1fr}}
+  .pick{appearance:none;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;text-align:left;cursor:pointer;transition:all .15s;display:flex;gap:14px;align-items:flex-start;font:inherit;color:inherit}
+  .pick:hover{border-color:var(--line-2)}
+  .pick.active{border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in oklab,var(--ink) 8%, transparent)}
+  .pick .badge{flex:0 0 auto;width:48px;height:64px;border-radius:6px;overflow:hidden;position:relative;background:#222;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+  .pick.bupa .badge{background:#fff}
+  .pick.bupa .badge::before{content:"";position:absolute;left:0;top:0;width:18%;height:100%;background:var(--brand-bupa)}
+  .pick.bupa .badge::after{content:"";position:absolute;left:18%;bottom:0;width:82%;height:18%;background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+  .pick.bp .badge{background:linear-gradient(160deg,#3a3a3a,#0d0d0d)}
+  .pick.bp .badge::before,.pick.bp .badge::after{content:"";position:absolute;width:18px;height:18px;border:1.5px solid #fff}
+  .pick.bp .badge::before{top:5px;left:5px;border-right:0;border-bottom:0}
+  .pick.bp .badge::after{bottom:5px;right:5px;border-left:0;border-top:0}
+  .pick .meta{flex:1;min-width:0}
+  .pick .name{font-size:14px;font-weight:600;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px}
+  .pick .tag{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--ink-3);padding:2px 6px;background:var(--bg);border:1px solid var(--line);border-radius:4px}
+  .pick .desc{margin-top:4px;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+  .pick .spec{margin-top:6px;font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink-3)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .panel-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .panel-head .lbl{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+  .panel-head .lbl b{color:var(--ink)}
+  .panel-head .meta{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-3)}
+
+  .drop{margin:18px;border:2px dashed var(--line-2);border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg);display:block}
+  .drop.over{border-color:var(--ink);background:color-mix(in oklab,var(--ink) 4%, var(--bg))}
+  .drop .ic{width:36px;height:36px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:18px}
+  .drop .t{font-size:15px;font-weight:600;letter-spacing:-0.01em}
+  .drop .s{font-size:12px;color:var(--ink-3);margin-top:4px}
+  .drop input{display:none}
+
+  .info-card{padding:16px 18px;font-size:12.5px;line-height:1.6;color:var(--ink-2);border-top:1px solid var(--line)}
+  .info-card b{color:var(--ink)}
+  .info-card .kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin-top:10px}
+  .info-card .kv dt{color:var(--ink-3);font-family:"JetBrains Mono",monospace;font-size:11px}
+  .info-card .kv dd{margin:0;color:var(--ink)}
+
+  .preview-box{padding:20px;background:repeating-linear-gradient(45deg, oklch(96% 0.005 240) 0 6px, oklch(94% 0.005 240) 6px 12px);display:flex;align-items:center;justify-content:center;min-height:240px;flex:1}
+  .preview-canvas-wrap{aspect-ratio:3/4;width:100%;max-width:480px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.04), 0 12px 30px -16px rgba(20,30,60,.3);position:relative;overflow:hidden}
+  .preview-canvas-wrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .empty{color:var(--ink-3);font-size:13px;text-align:center;padding:40px}
+
+  .actions{padding:14px 18px;display:flex;gap:10px;border-top:1px solid var(--line);background:var(--panel);flex-wrap:wrap;align-items:center}
+  button.btn{appearance:none;border:0;font:inherit;font-size:13px;font-weight:600;padding:10px 16px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;letter-spacing:.01em}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-secondary{background:transparent;border:1px solid var(--line-2);color:var(--ink-2)}
+  .status{font-size:12px;color:var(--ink-3);font-family:"JetBrains Mono",monospace;margin-left:auto}
+  .status.ok{color:#0a7a3b}
+  .status.err{color:#a82020}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="crumbs">
+    <span class="step">XHS COVER STUDIO</span>
+    <span class="dot"></span>
+    <span>2 templates · drop image · download</span>
+  </div>
+  <div class="h1">封面工作室 <em>· pick → upload → download</em></div>
+  <div class="mono" style="font-size:11px;color:var(--ink-3)" id="canvasMeta">— · —</div>
+</header>
+
+<main>
+
+  <div class="picker" id="picker">
+    <button class="pick bupa active" data-mode="bupa">
+      <div class="badge"></div>
+      <div class="meta">
+        <div class="name">BUPA · L-Frame <span class="tag">v1.0</span></div>
+        <div class="desc">蓝竖条 + 白底条 + 左下 logo。固定品牌相框，全部参数写死。</div>
+        <div class="spec">1242 × 1656 · JPG · #0E5BA8</div>
+      </div>
+    </button>
+    <button class="pick bp" data-mode="bp">
+      <div class="badge"></div>
+      <div class="meta">
+        <div class="name">BrandPulse · L-Brackets <span class="tag">v1.0</span></div>
+        <div class="desc">两个对角 L 角 + 渐变保护层 + 右下 wordmark logo。</div>
+        <div class="spec">1200 × 1600 · PNG · 暗化保护层</div>
+      </div>
+    </button>
+  </div>
+
+  <div class="grid">
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="lbl"><b>① 输入图片</b> · INPUT</div>
+        <div class="meta">JPG / PNG / WebP</div>
+      </div>
+      <label class="drop" id="drop">
+        <div class="ic">+</div>
+        <div class="t">拖入图片 / 点击选择</div>
+        <div class="s">任何尺寸 · 自动居中裁剪填满相片区</div>
+        <input type="file" id="file" accept="image/*"/>
+      </label>
+
+      <div class="info-card">
+        <b id="modeTitle">BUPA · L-Frame</b>
+        <div id="modeBlurb" style="margin-top:4px">把任意图片套上固定的 L 形品牌相框。所有相框参数写死，确保每张封面识别度一致。</div>
+        <dl class="kv" id="modeSpec">
+          <dt>左竖条</dt><dd>9% 宽 · #0E5BA8</dd>
+          <dt>底白条</dt><dd>11% 高 · #FFFFFF</dd>
+          <dt>Logo</dt><dd>底条左 · 高度 64% · 内边距 5%</dd>
+          <dt>裁剪</dt><dd>居中 cover-fit</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="lbl"><b>② 输出预览</b> · OUTPUT</div>
+        <div class="meta" id="meta">— · ×</div>
+      </div>
+      <div class="preview-box">
+        <div class="preview-canvas-wrap" id="wrap">
+          <canvas id="canvas" width="1242" height="1656" style="display:none"></canvas>
+          <div class="empty" id="empty">选个模板 → 把图片拖进来 →</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="dl" disabled>↓ 下载封面</button>
+        <button class="btn btn-secondary" id="reset">重置</button>
+        <span class="status" id="status">等待输入</span>
+      </div>
+    </section>
+
+  </div>
+
+</main>
+
+<script>
+/* ============================================================================
+   Shared image helpers
+   ============================================================================ */
+function loadImage(src, opts = {}) {
+  return new Promise((resolve, reject) => {
+    if (src instanceof HTMLImageElement) {
+      if (src.complete && src.naturalWidth) return resolve(src);
+      src.onload = () => resolve(src);
+      src.onerror = reject;
+      return;
+    }
+    const img = new Image();
+    if (opts.crossOrigin) img.crossOrigin = opts.crossOrigin;
+    img.onload = () => resolve(img);
+    img.onerror = (e) => reject(new Error('image load failed: ' + (typeof src === 'string' ? src : 'blob')));
+    if (src instanceof Blob || src instanceof File) {
+      img.src = URL.createObjectURL(src);
+    } else {
+      img.src = src;
+    }
+  });
+}
+
+function drawCover(ctx, img, dx, dy, dw, dh) {
+  const ir = img.naturalWidth / img.naturalHeight;
+  const tr = dw / dh;
+  let sx, sy, sw, sh;
+  if (ir > tr) {
+    sh = img.naturalHeight; sw = sh * tr;
+    sx = (img.naturalWidth - sw) / 2; sy = 0;
+  } else {
+    sw = img.naturalWidth; sh = sw / tr;
+    sx = 0; sy = (img.naturalHeight - sh) / 2;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+}
+
+function drawContain(ctx, img, dx, dy, dw, dh) {
+  const ir = img.naturalWidth / img.naturalHeight;
+  const tr = dw / dh;
+  let w, h;
+  if (ir > tr) { w = dw; h = dw / ir; } else { h = dh; w = dh * ir; }
+  ctx.drawImage(img, dx + (dw - w) / 2, dy + (dh - h) / 2, w, h);
+}
+
+/* ============================================================================
+   Renderer 1 — BUPA · L-Frame
+   Mirrors skills_bupa/skill/compose.js exactly.
+   ============================================================================ */
+const BUPA = {
+  W: 1242, H: 1656,
+  BRAND: '#0E5BA8',
+  LEFT_BAR_PCT: 9,
+  BOTTOM_BAR_PCT: 11,
+  LOGO_HEIGHT_PCT: 64,
+  LOGO_INSET_PCT: 5,
+  JPEG_QUALITY: 0.92,
+  LOGO_URL: 'skills_bupa/skill/assets/logo.png',
+};
+
+async function renderBupa({ sourceImage }) {
+  const W = BUPA.W, H = BUPA.H;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, W, H);
+
+  const leftBarW = Math.round(W * BUPA.LEFT_BAR_PCT / 100);
+  const bottomBarH = Math.round(H * BUPA.BOTTOM_BAR_PCT / 100);
+  const photoX = leftBarW, photoY = 0;
+  const photoW = W - leftBarW, photoH = H - bottomBarH;
+
+  const photoImg = await loadImage(sourceImage);
+  drawCover(ctx, photoImg, photoX, photoY, photoW, photoH);
+
+  ctx.fillStyle = BUPA.BRAND;
+  ctx.fillRect(0, 0, leftBarW, H);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(leftBarW, H - bottomBarH, W - leftBarW, bottomBarH);
+
+  const logoImg = await loadImage(BUPA.LOGO_URL);
+  const logoH = Math.round(bottomBarH * BUPA.LOGO_HEIGHT_PCT / 100);
+  const logoW = logoH;
+  const logoInset = Math.round((W - leftBarW) * BUPA.LOGO_INSET_PCT / 100);
+  const logoX = leftBarW + logoInset;
+  const logoY = H - bottomBarH + Math.round((bottomBarH - logoH) / 2);
+  drawContain(ctx, logoImg, logoX, logoY, logoW, logoH);
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve({ blob, mime: 'image/jpeg', ext: 'jpg', w: W, h: H }),
+      'image/jpeg', BUPA.JPEG_QUALITY);
+  });
+}
+
+/* ============================================================================
+   Renderer 2 — BrandPulse · L-Brackets
+   Translates skills_brandpulse/cover-template.html into Canvas drawing.
+   ============================================================================ */
+const BP = {
+  W: 1200, H: 1600,
+  BRACKET_INSET: 36,
+  BRACKET_SIZE: 180,
+  BRACKET_THICKNESS: 3,
+  VEIL_TOP: 0.35,
+  VEIL_BOTTOM: 0.55,
+  LOGO_SIZE: 56,
+  LOGO_GAP: 14,
+  LOGO_INSET_X: 56,
+  LOGO_INSET_Y: 56,
+  WORDMARK_SIZE: 26,
+  WORDMARK_TEXT: 'Brandpulse',
+  LOGO_URL: 'skills_brandpulse/assets/logo.jpg',
+};
+
+async function renderBrandpulse({ sourceImage }) {
+  const W = BP.W, H = BP.H;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Make sure Cormorant Garamond is loaded before we measure / draw text.
+  // Falls back silently to serif if Google Fonts aren't reachable.
+  try { await document.fonts.load(`500 ${BP.WORDMARK_SIZE}px "Cormorant Garamond"`); } catch (_) {}
+
+  // 1. Photo
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+  const photo = await loadImage(sourceImage);
+  drawCover(ctx, photo, 0, 0, W, H);
+
+  // 2. Vertical gradient veil (matches the CSS linear-gradient stops)
+  const veil = ctx.createLinearGradient(0, 0, 0, H);
+  veil.addColorStop(0, `rgba(0,0,0,${BP.VEIL_TOP})`);
+  veil.addColorStop(0.26, 'rgba(0,0,0,0)');
+  veil.addColorStop(0.62, 'rgba(0,0,0,0)');
+  veil.addColorStop(1, `rgba(0,0,0,${BP.VEIL_BOTTOM})`);
+  ctx.fillStyle = veil;
+  ctx.fillRect(0, 0, W, H);
+
+  // 3. L-brackets (top-left + bottom-right)
+  const inset = BP.BRACKET_INSET, size = BP.BRACKET_SIZE, thick = BP.BRACKET_THICKNESS;
+  ctx.fillStyle = '#ffffff';
+  // top-left: top edge + left edge
+  ctx.fillRect(inset, inset, size, thick);
+  ctx.fillRect(inset, inset, thick, size);
+  // bottom-right: bottom edge + right edge
+  const brX = W - inset - size, brY = H - inset - size;
+  ctx.fillRect(brX, brY + size - thick, size, thick);
+  ctx.fillRect(brX + size - thick, brY, thick, size);
+
+  // 4. Logo lockup, bottom-right
+  const logoSize = BP.LOGO_SIZE;
+  ctx.font = `500 ${BP.WORDMARK_SIZE}px "Cormorant Garamond", Georgia, serif`;
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffffff';
+  // Approximate the CSS letter-spacing:0.04em by widening the measured width.
+  const wordW = ctx.measureText(BP.WORDMARK_TEXT).width
+    + (BP.WORDMARK_TEXT.length - 1) * BP.WORDMARK_SIZE * 0.04;
+  const lockupTotalW = logoSize + BP.LOGO_GAP + wordW;
+  const lockupRightX = W - BP.LOGO_INSET_X;
+  const lockupLeftX = lockupRightX - lockupTotalW;
+  const lockupCenterY = H - BP.LOGO_INSET_Y - logoSize / 2;
+
+  // Logo: circular crop + grayscale/brightness/contrast filter (matches CSS)
+  const logoImg = await loadImage(BP.LOGO_URL);
+  const off = document.createElement('canvas');
+  off.width = logoSize; off.height = logoSize;
+  const offCtx = off.getContext('2d');
+  offCtx.save();
+  offCtx.beginPath();
+  offCtx.arc(logoSize / 2, logoSize / 2, logoSize / 2, 0, Math.PI * 2);
+  offCtx.clip();
+  offCtx.filter = 'grayscale(1) brightness(1.5) contrast(1.1)';
+  drawCover(offCtx, logoImg, 0, 0, logoSize, logoSize);
+  offCtx.restore();
+  ctx.drawImage(off, lockupLeftX, lockupCenterY - logoSize / 2);
+
+  // Wordmark text — draw each char, advancing by measuredWidth + letter-spacing.
+  let x = lockupLeftX + logoSize + BP.LOGO_GAP;
+  const chars = BP.WORDMARK_TEXT.split('');
+  for (let i = 0; i < chars.length; i++) {
+    ctx.fillText(chars[i], x, lockupCenterY);
+    x += ctx.measureText(chars[i]).width;
+    if (i < chars.length - 1) x += BP.WORDMARK_SIZE * 0.04;
+  }
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve({ blob, mime: 'image/png', ext: 'png', w: W, h: H }),
+      'image/png');
+  });
+}
+
+/* ============================================================================
+   UI wiring
+   ============================================================================ */
+const RENDERERS = {
+  bupa: { name: 'BUPA · L-Frame', render: renderBupa, w: BUPA.W, h: BUPA.H, ext: 'jpg' },
+  bp:   { name: 'BrandPulse · L-Brackets', render: renderBrandpulse, w: BP.W, h: BP.H, ext: 'png' },
+};
+
+const MODE_INFO = {
+  bupa: {
+    blurb: '把任意图片套上固定的蓝色 L 形品牌相框。所有相框参数写死，确保每张封面识别度一致。',
+    spec: [
+      ['左竖条', '9% 宽 · #0E5BA8'],
+      ['底白条', '11% 高 · #FFFFFF'],
+      ['Logo', '底条左 · 高度 64% · 内边距 5%'],
+      ['裁剪', '居中 cover-fit'],
+    ],
+  },
+  bp: {
+    blurb: '在图片上加两个对角 L 角 + 上下渐变保护层 + 右下 logo + Brandpulse wordmark。优雅的杂志风。',
+    spec: [
+      ['L 角', '36px 内嵌 · 180px 腿长 · 3px 描边'],
+      ['保护渐变', '顶 0.35 / 底 0.55'],
+      ['Logo lockup', '右下 56px 内嵌 · 圆形'],
+      ['Wordmark', 'Cormorant Garamond 26px'],
+    ],
+  },
+};
+
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('file');
+const previewCanvas = document.getElementById('canvas');
+const empty = document.getElementById('empty');
+const dlBtn = document.getElementById('dl');
+const resetBtn = document.getElementById('reset');
+const status = document.getElementById('status');
+const meta = document.getElementById('meta');
+const canvasMeta = document.getElementById('canvasMeta');
+const modeTitle = document.getElementById('modeTitle');
+const modeBlurb = document.getElementById('modeBlurb');
+const modeSpec = document.getElementById('modeSpec');
+const picker = document.getElementById('picker');
+
+let currentMode = 'bupa';
+let lastFile = null;
+let lastResult = null;
+
+function applyModeUI() {
+  const r = RENDERERS[currentMode];
+  modeTitle.textContent = r.name;
+  modeBlurb.textContent = MODE_INFO[currentMode].blurb;
+  modeSpec.innerHTML = MODE_INFO[currentMode].spec
+    .map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  canvasMeta.textContent = `${r.w} × ${r.h} · ${r.ext.toUpperCase()}`;
+  // Update picker active class
+  picker.querySelectorAll('.pick').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === currentMode);
+  });
+  // Resize the visible canvas element to the new aspect/resolution
+  previewCanvas.width = r.w;
+  previewCanvas.height = r.h;
+}
+
+picker.addEventListener('click', (e) => {
+  const btn = e.target.closest('.pick');
+  if (!btn) return;
+  if (btn.dataset.mode === currentMode) return;
+  currentMode = btn.dataset.mode;
+  applyModeUI();
+  if (lastFile) render(lastFile); // re-render with the new template
+});
+
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => {
+  e.preventDefault(); drop.classList.add('over');
+}));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => {
+  e.preventDefault(); drop.classList.remove('over');
+}));
+drop.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0];
+  if (f) render(f);
+});
+fileInput.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) render(f);
+});
+
+async function render(file) {
+  lastFile = file;
+  status.textContent = '渲染中...';
+  status.classList.remove('ok','err');
+
+  const r = RENDERERS[currentMode];
+  try {
+    const result = await r.render({ sourceImage: file });
+    lastResult = { ...result, file };
+    // Paint to visible canvas
+    const img = await loadImage(result.blob);
+    const ctx = previewCanvas.getContext('2d');
+    previewCanvas.width = result.w;
+    previewCanvas.height = result.h;
+    ctx.clearRect(0, 0, result.w, result.h);
+    ctx.drawImage(img, 0, 0);
+    previewCanvas.style.display = 'block';
+    empty.style.display = 'none';
+    dlBtn.disabled = false;
+    const kb = Math.round(result.blob.size / 1024);
+    status.textContent = '✓ 已生成 · ' + kb + ' KB';
+    status.classList.add('ok');
+    meta.textContent = `${result.w} × ${result.h} · ${kb}KB`;
+  } catch (err) {
+    console.error(err);
+    status.textContent = '失败: ' + err.message;
+    status.classList.add('err');
+  }
+}
+
+dlBtn.addEventListener('click', () => {
+  if (!lastResult) return;
+  const baseName = (lastResult.file?.name || 'cover').replace(/\.[^.]+$/, '');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(lastResult.blob);
+  a.download = `${baseName}-${currentMode}-cover.${lastResult.ext}`;
+  a.click();
+});
+
+resetBtn.addEventListener('click', () => {
+  previewCanvas.style.display = 'none';
+  empty.style.display = 'block';
+  dlBtn.disabled = true;
+  fileInput.value = '';
+  lastFile = null;
+  lastResult = null;
+  status.textContent = '等待输入';
+  status.classList.remove('ok','err');
+  meta.textContent = '— · ×';
+});
+
+applyModeUI();
+</script>
+
+</body>
+</html>

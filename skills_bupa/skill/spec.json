@@ -1,0 +1,65 @@
+{
+  "skill_id": "xhs-cover-frame-l",
+  "version": "1.0.0",
+  "description": "Wrap any image in a fixed L-shaped brand frame for Xiaohongshu covers",
+  "canvas": {
+    "width": 1242,
+    "height": 1656,
+    "aspect_ratio": "3:4",
+    "background": "#FFFFFF",
+    "color_space": "sRGB"
+  },
+  "frame_elements": [
+    {
+      "id": "left_bar",
+      "type": "rect",
+      "fill": "#0E5BA8",
+      "position_pct": { "left": 0, "top": 0, "width": 9, "height": 100 },
+      "position_px": { "x": 0, "y": 0, "width": 112, "height": 1656 }
+    },
+    {
+      "id": "bottom_bar",
+      "type": "rect",
+      "fill": "#FFFFFF",
+      "position_pct": { "left": 9, "top": 89, "width": 91, "height": 11 },
+      "position_px": { "x": 112, "y": 1474, "width": 1130, "height": 182 }
+    },
+    {
+      "id": "photo_area",
+      "type": "image",
+      "source": "input.source_image",
+      "fit": "cover",
+      "anchor": "center",
+      "position_pct": { "left": 9, "top": 0, "width": 91, "height": 89 },
+      "position_px": { "x": 112, "y": 0, "width": 1130, "height": 1474 }
+    },
+    {
+      "id": "logo",
+      "type": "image",
+      "source": "assets/logo.png",
+      "fit": "contain",
+      "anchor": "left-center",
+      "container_id": "bottom_bar",
+      "size_pct_of_container_height": 64,
+      "left_inset_pct_of_container_width": 5,
+      "position_px": { "x": 168, "y": 1507, "width": 117, "height": 117 }
+    }
+  ],
+  "render_order": ["photo_area", "left_bar", "bottom_bar", "logo"],
+  "output": {
+    "format": "jpeg",
+    "quality": 0.92,
+    "max_file_size_mb": 5
+  },
+  "constraints": {
+    "no_text": true,
+    "no_decoration": true,
+    "no_rounded_corners": true,
+    "no_shadows": true,
+    "frame_is_invariant": "Every post uses these exact values. Do not parameterize."
+  },
+  "brand": {
+    "primary_color": "#0E5BA8",
+    "logo_path": "assets/logo.png"
+  }
+}

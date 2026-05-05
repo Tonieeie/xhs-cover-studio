@@ -1,0 +1,21 @@
+# User uploads — populated at runtime, not source
+skills_brandpulse/uploads/
+
+# Node / Vercel build artifacts
+node_modules/
+.vercel/
+.next/
+dist/
+build/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Env / secrets
+.env
+.env.*
+!.env.example

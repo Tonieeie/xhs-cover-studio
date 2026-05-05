@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>BrandPulse · 小红书封面框架方案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1a1a;
+    --ink-2:#3a3a3a;
+    --paper:#f4f1ec;
+    --paper-2:#ebe6df;
+    --line:#d8d2c8;
+    --accent:#c9a96a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink);font-family:'Inter','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:80px 64px 120px}
+
+  /* ——— Page header ——— */
+  .page-head{max-width:1480px;margin:0 auto 64px}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-2);margin-bottom:20px}
+  .page-head h1{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:64px;line-height:1.05;letter-spacing:-0.01em;margin-bottom:18px}
+  .page-head h1 em{font-style:italic;color:var(--accent)}
+  .page-head p{font-family:'Noto Sans SC',sans-serif;font-size:16px;line-height:1.7;color:var(--ink-2);max-width:780px}
+
+  hr.rule{border:none;height:1px;background:var(--line);max-width:1480px;margin:0 auto 80px}
+
+  /* ——— 3-up grid ——— */
+  .grid{
+    max-width:1480px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:56px;
+  }
+
+  .option{display:flex;flex-direction:column}
+  .opt-meta{margin-bottom:24px}
+  .opt-num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.22em;color:var(--accent);margin-bottom:10px}
+  .opt-title{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:32px;line-height:1.1;margin-bottom:6px}
+  .opt-zh{font-family:'Noto Serif SC',serif;font-size:14px;color:var(--ink-2);letter-spacing:0.08em}
+
+  /* ——— The 3:4 cover ——— */
+  .cover{
+    aspect-ratio:3/4;width:100%;
+    position:relative;overflow:hidden;
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.35), 0 8px 20px -10px rgba(0,0,0,.18);
+    background:#000;
+  }
+  .photo{
+    position:absolute;inset:0;
+    background-size:cover;background-position:center;
+  }
+  /* photo placeholders – three different stripey scenes */
+  .photo.a{background:
+    repeating-linear-gradient(135deg,#bdb3a3 0 14px,#aea391 14px 28px),
+    linear-gradient(180deg,#cfc6b6,#9c907d);}
+  .photo.b{background:
+    repeating-linear-gradient(45deg,#3e4248 0 22px,#363a40 22px 44px),
+    linear-gradient(180deg,#4a4e54,#22252a);}
+  .photo.c{background:
+    repeating-linear-gradient(90deg,#e7d8c0 0 18px,#dfceb1 18px 36px),
+    linear-gradient(180deg,#efe1c8,#c4ae8c);}
+
+  .ph-tag{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;
+    color:rgba(255,255,255,.65);text-transform:uppercase;
+    padding:6px 14px;border:1px solid rgba(255,255,255,.4);
+    backdrop-filter:blur(2px);
+  }
+  .photo.a .ph-tag{color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.5)}
+
+  /* ===== STYLE 1 — Editorial Frame (full ivory border + corner ticks) ===== */
+  .s1 .photo{inset:48px 48px 130px 48px}
+  .s1 .frame{
+    position:absolute;inset:32px 32px 114px 32px;
+    border:1px solid rgba(0,0,0,.0);
+    /* inner thin frame is drawn by photo edge; we add a hairline outline outside */
+    box-shadow:0 0 0 1px var(--line) inset;
+    pointer-events:none;
+  }
+  .s1 .paper{position:absolute;inset:0;background:var(--paper)}
+  .s1 .ticks{position:absolute;inset:0;pointer-events:none}
+  .s1 .ticks span{position:absolute;width:14px;height:14px;border:1px solid var(--ink)}
+  .s1 .ticks span:nth-child(1){top:24px;left:24px;border-right:none;border-bottom:none}
+  .s1 .ticks span:nth-child(2){top:24px;right:24px;border-left:none;border-bottom:none}
+  .s1 .ticks span:nth-child(3){bottom:106px;left:24px;border-right:none;border-top:none}
+  .s1 .ticks span:nth-child(4){bottom:106px;right:24px;border-left:none;border-top:none}
+  .s1 .footer{
+    position:absolute;left:0;right:0;bottom:0;height:98px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 40px;
+  }
+  .s1 .footer .mono{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-2)}
+  .s1 .lockup{display:flex;align-items:center;gap:10px}
+  .s1 .lockup img{width:32px;height:32px;object-fit:cover;border-radius:2px}
+  .s1 .lockup .wm{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:18px;letter-spacing:0.04em}
+  .s1 .lockup .wm small{display:block;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.3em;color:var(--ink-2);margin-top:2px}
+
+  /* ===== STYLE 2 — L-Bracket (half frame, top-left + bottom-right) ===== */
+  .s2 .photo{inset:0}
+  .s2 .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 28%, rgba(0,0,0,0) 60%, rgba(0,0,0,.55) 100%)}
+  .s2 .bracket{position:absolute;pointer-events:none}
+  .s2 .br-tl{top:28px;left:28px;width:140px;height:140px;
+    border-top:2px solid #fff;border-left:2px solid #fff;
+  }
+  .s2 .br-br{bottom:28px;right:28px;width:140px;height:140px;
+    border-bottom:2px solid #fff;border-right:2px solid #fff;
+  }
+  .s2 .badge{
+    position:absolute;top:44px;left:46px;
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.28em;color:#fff;text-transform:uppercase;
+  }
+  .s2 .badge::before{content:"";display:inline-block;width:18px;height:1px;background:#fff;vertical-align:middle;margin-right:10px;transform:translateY(-2px)}
+  .s2 .lockup{
+    position:absolute;right:46px;bottom:44px;display:flex;align-items:center;gap:12px;
+  }
+  .s2 .lockup img{width:42px;height:42px;object-fit:cover;border-radius:50%;filter:grayscale(1) brightness(1.4) contrast(1.1)}
+  .s2 .lockup .wm{font-family:'Cormorant Garamond',serif;font-weight:500;color:#fff;font-size:20px;line-height:1;letter-spacing:0.04em}
+  .s2 .lockup .wm small{display:block;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.32em;opacity:.8;margin-top:3px}
+
+  /* ===== STYLE 3 — Polaroid Tab (top label bar + bottom tab) ===== */
+  .s3 .top-bar{
+    position:absolute;left:0;right:0;top:0;height:60px;
+    background:#0e0e0e;color:#fff;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 28px;
+  }
+  .s3 .top-bar .l{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;letter-spacing:0.02em}
+  .s3 .top-bar .r{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.28em}
+  .s3 .photo{inset:60px 0 150px 0}
+  .s3 .bottom{
+    position:absolute;left:0;right:0;bottom:0;height:150px;
+    background:var(--paper);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 32px;
+  }
+  .s3 .bottom .lockup{display:flex;align-items:center;gap:14px}
+  .s3 .bottom .lockup img{width:62px;height:62px;object-fit:cover;border-radius:4px}
+  .s3 .bottom .wm{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:24px;letter-spacing:0.06em;line-height:1}
+  .s3 .bottom .wm small{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.32em;color:var(--ink-2);margin-top:5px}
+  .s3 .bottom .num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--ink-2);text-align:right;line-height:1.6}
+  .s3 .bottom .num b{display:block;font-weight:500;color:var(--ink);font-size:13px}
+
+  /* ——— Notes under each cover ——— */
+  .notes{margin-top:28px;display:flex;flex-direction:column;gap:18px}
+  .note{display:flex;gap:14px;align-items:flex-start}
+  .note .k{
+    flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.22em;color:var(--accent);text-transform:uppercase;
+    width:88px;padding-top:3px;
+  }
+  .note .v{font-family:'Noto Sans SC',sans-serif;font-size:13px;line-height:1.7;color:var(--ink-2)}
+  .note .v b{color:var(--ink);font-weight:600}
+
+  /* ——— Footnote ——— */
+  .foot{
+    max-width:1480px;margin:96px auto 0;padding-top:32px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:flex-end;gap:40px;
+  }
+  .foot p{font-family:'Noto Sans SC',sans-serif;font-size:13px;line-height:1.7;color:var(--ink-2);max-width:760px}
+  .foot p b{color:var(--ink)}
+  .foot .stamp{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.22em;color:var(--ink-2);text-transform:uppercase;text-align:right;line-height:1.8}
+
+  @media (max-width:1100px){
+    .grid{grid-template-columns:1fr;gap:64px}
+    body{padding:48px 24px 80px}
+    .page-head h1{font-size:44px}
+  }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <div class="eyebrow">Cover Frame System · 小红书封面 · 3:4</div>
+  <h1>三种统一封面框 — <em>BrandPulse Media</em></h1>
+  <p>核心思路：每张封面都是「一张图 + 一套固定的边框」。所有帖子套同一个框，刷到主页就能立刻认出是你的内容。下面三种风格各自有完整的视觉逻辑、Logo 处理方式和占位结构，挑一个稳定用即可。</p>
+</header>
+
+<hr class="rule">
+
+<div class="grid">
+
+  <!-- ============== OPTION 1 ============== -->
+  <article class="option">
+    <div class="opt-meta">
+      <div class="opt-num">Frame · 01</div>
+      <div class="opt-title">Editorial Border</div>
+      <div class="opt-zh">画廊式 · 全包边内嵌框</div>
+    </div>
+
+    <div class="cover s1">
+      <div class="paper"></div>
+      <div class="photo a"><div class="ph-tag">Your Photo · 1200 × 1600</div></div>
+      <div class="frame"></div>
+      <div class="ticks"><span></span><span></span><span></span><span></span></div>
+      <div class="footer">
+        <div class="mono">No. 001 / Brandpulse Journal</div>
+        <div class="lockup">
+          <img src="assets/logo.jpg" alt="">
+          <div class="wm">Brandpulse<small>MEDIA · EST 2024</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><div class="k">心理逻辑</div><div class="v"><b>"杂志感 / 收藏感"</b>。米色纸感底 + 内嵌细线框 + 四角刻度，让每张图看起来像被「装裱」过。适合分享审美、生活方式、品牌灵感类内容。吸引追求质感、慢节奏、文艺向的用户。</div></div>
+      <div class="note"><div class="k">Logo 处理</div><div class="v">底部居右，<b>32px 缩略 Logo + 衬线字 BRANDPULSE</b>。无阴影、无混合模式，直接平铺在米色纸上。比例约占封面宽度 1/4，永远固定位置。</div></div>
+      <div class="note"><div class="k">占位结构</div><div class="v">外层：米色画框（左右上 32px，下 114px）。<br>主体：图片居中嵌入框内。<br>四角：1px 实心刻度小方块。<br>底栏：左 = 编号 / 栏目，右 = Logo 锁定位。</div></div>
+    </div>
+  </article>
+
+  <!-- ============== OPTION 2 ============== -->
+  <article class="option">
+    <div class="opt-meta">
+      <div class="opt-num">Frame · 02</div>
+      <div class="opt-title">L-Bracket Half Frame</div>
+      <div class="opt-zh">取景器 · 对角半框</div>
+    </div>
+
+    <div class="cover s2">
+      <div class="photo b"><div class="ph-tag">Your Photo · Full Bleed</div></div>
+      <div class="veil"></div>
+      <div class="bracket br-tl"></div>
+      <div class="bracket br-br"></div>
+      <div class="lockup">
+        <img src="assets/logo.jpg" alt="">
+        <div class="wm">Brandpulse</div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><div class="k">心理逻辑</div><div class="v"><b>"取景框 / 镜头感"</b>。图片满铺，左上 + 右下两个白色 L 形角标，像相机取景框，暗示「这是我捕捉的一刻」。专业感、冷感、当代。吸引关注摄影、时尚、商业洞察、行业分析的用户。</div></div>
+      <div class="note"><div class="k">Logo 处理</div><div class="v">右下角小尺寸圆形裁切 + 白色衬线字。<b>滤镜：grayscale(1) + brightness(1.4)</b>，让 Logo 在任何底图上都呈现统一的白色调。上下加渐变保护层确保可读性。</div></div>
+      <div class="note"><div class="k">占位结构</div><div class="v">主体：图片满铺铺底。<br>顶 / 底：黑色保护渐变（28% / 40% 高度）。<br>左上：L 角 + 横线 + 栏目编号。<br>右下：圆形 Logo + 衬线名。<br>L 角永远固定 28px 内缩、140×140 尺寸。</div></div>
+    </div>
+  </article>
+
+  <!-- ============== OPTION 3 ============== -->
+  <article class="option">
+    <div class="opt-meta">
+      <div class="opt-num">Frame · 03</div>
+      <div class="opt-title">Polaroid Tab</div>
+      <div class="opt-zh">标签条 · 上黑下白双栏</div>
+    </div>
+
+    <div class="cover s3">
+      <div class="top-bar">
+        <div class="l">Brandpulse <span style="opacity:.6;font-style:normal;font-family:'JetBrains Mono';font-size:12px;letter-spacing:.2em">/ JOURNAL</span></div>
+        <div class="r">VOL · 001</div>
+      </div>
+      <div class="photo c"><div class="ph-tag" style="color:rgba(0,0,0,.55);border-color:rgba(0,0,0,.4)">Your Photo · 1200 × 1280</div></div>
+      <div class="bottom">
+        <div class="lockup">
+          <img src="assets/logo.jpg" alt="">
+          <div class="wm">Brandpulse<small>MEDIA STUDIO</small></div>
+        </div>
+        <div class="num">
+          <b>NO · 001</b>
+          2026 / 05 · 05
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><div class="k">心理逻辑</div><div class="v"><b>"档案 / 期刊感"</b>。顶部黑条 + 底部米白条，像一本期刊或档案卡片。每期换图但版式不变，主页瀑布流刷下来会形成强烈的「系列感」。适合知识、合集、连载型内容。吸引爱收藏、爱归档、有品牌意识的人群。</div></div>
+      <div class="note"><div class="k">Logo 处理</div><div class="v">底部白栏左侧 <b>62×62 方形 Logo + 衬线名</b>。Logo 直接使用原图（深底 + 白天鹅），与上方黑条呼应，无需任何混合模式。永远占据底栏左半。</div></div>
+      <div class="note"><div class="k">占位结构</div><div class="v">顶栏（60px）：左 = 刊名 / 栏目，右 = 期号。<br>主体：图片满铺中段（60–下 150 之间）。<br>底栏（150px）：左 = Logo + 名称，右 = 编号 + 日期。<br>三段比例固定，换图不换框。</div></div>
+    </div>
+  </article>
+
+</div>
+
+<footer class="foot">
+  <p><b>怎么用：</b>选定一种之后，每次发帖只换中间的图片就行，外层的边框、Logo、字号、颜色、位置全部保持不变。建议在 Figma / Canva / 醒图里做一个固定模板，导入图片即可一键出图，几个月不变形 —— 这就是「视觉资产积累」。</p>
+  <div class="stamp">
+    Brandpulse Media<br>
+    Cover Frame Spec · v1<br>
+    2026 / 05 / 05
+  </div>
+</footer>
+
+</body>
+</html>

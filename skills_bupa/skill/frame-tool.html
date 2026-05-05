@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>XHS Cover Frame Tool · 拖图即出封面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: oklch(98% 0.005 240);
+    --panel: oklch(100% 0 0);
+    --ink: oklch(18% 0.01 240);
+    --ink-2: oklch(40% 0.01 240);
+    --ink-3: oklch(58% 0.01 240);
+    --line: oklch(92% 0.005 240);
+    --line-2: oklch(86% 0.005 240);
+    --brand: #0E5BA8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Geist","Noto Sans SC",-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"JetBrains Mono",monospace}
+  .serif{font-family:"Instrument Serif",serif;font-style:italic}
+
+  header{padding:22px 32px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:24px;background:var(--panel)}
+  .crumbs{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-3);letter-spacing:.04em}
+  .crumbs .step{padding:4px 10px;border-radius:999px;background:var(--ink);color:#fff;font-weight:500}
+  .crumbs .dot{width:4px;height:4px;border-radius:50%;background:var(--ink-3)}
+  .h1{font-size:20px;font-weight:600;letter-spacing:-0.02em}
+  .h1 em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400}
+
+  main{max-width:1280px;margin:0 auto;padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:32px}
+  @media(max-width:900px){main{grid-template-columns:1fr}}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .panel-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .panel-head .lbl{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+  .panel-head .lbl b{color:var(--ink)}
+  .panel-head .meta{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-3)}
+
+  .drop{margin:18px;border:2px dashed var(--line-2);border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg)}
+  .drop.over{border-color:var(--brand);background:color-mix(in oklab,var(--brand) 5%, var(--bg))}
+  .drop .ic{width:36px;height:36px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:18px}
+  .drop .t{font-size:15px;font-weight:600;letter-spacing:-0.01em}
+  .drop .s{font-size:12px;color:var(--ink-3);margin-top:4px}
+  .drop input{display:none}
+
+  .preview-box{padding:20px;background:repeating-linear-gradient(45deg, oklch(96% 0.005 240) 0 6px, oklch(94% 0.005 240) 6px 12px);display:flex;align-items:center;justify-content:center;min-height:200px}
+  .preview-canvas-wrap{aspect-ratio:3/4;width:100%;max-width:480px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.04), 0 12px 30px -16px rgba(20,30,60,.3);position:relative;overflow:hidden}
+  .preview-canvas-wrap canvas{position:absolute;inset:0;width:100%;height:100%}
+  .empty{color:var(--ink-3);font-size:13px;text-align:center;padding:40px}
+
+  .actions{padding:14px 18px;display:flex;gap:10px;border-top:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+  button.btn{appearance:none;border:0;font:inherit;font-size:13px;font-weight:600;padding:10px 16px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;letter-spacing:.01em}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-secondary{background:transparent;border:1px solid var(--line-2);color:var(--ink-2)}
+
+  .info-card{padding:18px;font-size:12.5px;line-height:1.65;color:var(--ink-2)}
+  .info-card b{color:var(--ink)}
+  .info-card .kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin-top:10px}
+  .info-card .kv dt{color:var(--ink-3);font-family:"JetBrains Mono",monospace;font-size:11px}
+  .info-card .kv dd{margin:0;color:var(--ink)}
+
+  .files{padding:18px;display:flex;flex-direction:column;gap:8px}
+  .file-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-size:12.5px}
+  .file-row .name{font-family:"JetBrains Mono",monospace;color:var(--ink)}
+  .file-row .desc{color:var(--ink-3);font-size:11px}
+
+  .status{font-size:12px;color:var(--ink-3);font-family:"JetBrains Mono",monospace;margin-left:auto;align-self:center}
+  .status.ok{color:#0a7a3b}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="crumbs">
+    <span class="step">SKILL</span>
+    <span class="dot"></span>
+    <span>xhs-cover-frame-l · v1.0.0</span>
+  </div>
+  <div class="h1">封面相框工具 <em>· drop & download</em></div>
+  <div class="mono" style="font-size:11px;color:var(--ink-3)">1242 × 1656 · 3:4 · sRGB</div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="lbl"><b>① 输入图片</b> · INPUT</div>
+      <div class="meta">JPG / PNG / WebP</div>
+    </div>
+    <label class="drop" id="drop">
+      <div class="ic">+</div>
+      <div class="t">拖入图片 / 点击选择</div>
+      <div class="s">任何尺寸 · 自动居中裁剪到 91% × 89% 区域</div>
+      <input type="file" id="file" accept="image/*"/>
+    </label>
+
+    <div class="info-card" style="border-top:1px solid var(--line)">
+      <b>这个工具做什么：</b>把你输入的任何图片，套上固定的 L 形品牌相框，输出一张 1242×1656 的小红书封面。所有相框参数都是写死的——这是你的品牌识别。
+      <dl class="kv">
+        <dt>左竖条</dt><dd>9% 宽 · #0E5BA8</dd>
+        <dt>底白条</dt><dd>11% 高 · #FFFFFF</dd>
+        <dt>Logo</dt><dd>底条左 · 高度 64% · 内边距 5%</dd>
+        <dt>裁剪</dt><dd>居中 · cover-fit</dd>
+      </dl>
+    </div>
+
+    <div class="files">
+      <div class="lbl mono" style="font-size:10px;letter-spacing:.18em;color:var(--ink-3)">SKILL FILES · 喂给下一个 AI</div>
+      <div class="file-row"><div><div class="name">skill/SKILL.md</div><div class="desc">人类 + AI 可读的说明书</div></div></div>
+      <div class="file-row"><div><div class="name">skill/spec.json</div><div class="desc">机器可读规格</div></div></div>
+      <div class="file-row"><div><div class="name">skill/compose.js</div><div class="desc">Canvas 渲染函数</div></div></div>
+      <div class="file-row"><div><div class="name">skill/assets/logo.png</div><div class="desc">品牌 Logo</div></div></div>
+      <div class="file-row"><div><div class="name">skill/frame-tool.html</div><div class="desc">本工具（拖图即出封面）</div></div></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="lbl"><b>② 输出预览</b> · OUTPUT</div>
+      <div class="meta" id="meta">— · ×</div>
+    </div>
+    <div class="preview-box">
+      <div class="preview-canvas-wrap" id="wrap">
+        <canvas id="canvas" width="1242" height="1656" style="display:none"></canvas>
+        <div class="empty" id="empty">把图片拖进来 →</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="dl" disabled>↓ 下载封面 JPG</button>
+      <button class="btn btn-secondary" id="reset">重置</button>
+      <span class="status" id="status">等待输入</span>
+    </div>
+  </section>
+
+</main>
+
+<script src="../skill/compose.js"></script>
+<script>
+  const drop = document.getElementById('drop');
+  const fileInput = document.getElementById('file');
+  const canvas = document.getElementById('canvas');
+  const empty = document.getElementById('empty');
+  const dlBtn = document.getElementById('dl');
+  const resetBtn = document.getElementById('reset');
+  const status = document.getElementById('status');
+  const meta = document.getElementById('meta');
+
+  const LOGO_URL = '../skill/assets/logo.png';
+
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.classList.add('over');
+  }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.classList.remove('over');
+  }));
+  drop.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  fileInput.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) handleFile(f);
+  });
+
+  let lastBlob = null;
+  let lastName = 'cover.jpg';
+
+  async function handleFile(file){
+    status.textContent = '渲染中...';
+    status.classList.remove('ok');
+    lastName = (file.name.replace(/\.[^.]+$/, '') || 'cover') + '-cover.jpg';
+
+    try {
+      const blob = await composeCover({ sourceImage: file, logoUrl: LOGO_URL });
+      // Draw to visible canvas
+      const img = new Image();
+      img.onload = () => {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img, 0, 0);
+        canvas.style.display = 'block';
+        empty.style.display = 'none';
+      };
+      img.src = URL.createObjectURL(blob);
+      lastBlob = blob;
+      dlBtn.disabled = false;
+      status.textContent = '✓ 已生成 · ' + Math.round(blob.size/1024) + ' KB';
+      status.classList.add('ok');
+      meta.textContent = '1242 × 1656 · ' + Math.round(blob.size/1024) + 'KB';
+    } catch(err){
+      status.textContent = '失败: ' + err.message;
+      console.error(err);
+    }
+  }
+
+  dlBtn.addEventListener('click', () => {
+    if (!lastBlob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(lastBlob);
+    a.download = lastName;
+    a.click();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    canvas.style.display = 'none';
+    empty.style.display = 'block';
+    dlBtn.disabled = true;
+    fileInput.value = '';
+    lastBlob = null;
+    status.textContent = '等待输入';
+    status.classList.remove('ok');
+    meta.textContent = '— · ×';
+  });
+</script>
+
+</body>
+</html>
