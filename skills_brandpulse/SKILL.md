@@ -16,7 +16,7 @@
 ---
 
 ## 模板文件
-- `cover-template.html` — 主模板（Frame 02 · L-Bracket 半框）
+- `cover-template.html` — 主模板（Frame 03 · 灰色渐变四面画框 / Gray Gradient Passe-partout）
 - `assets/logo.jpg` — 品牌 Logo（永远不动）
 - `assets/photo.jpg` — 当前封面用的图（每次被替换）
 
@@ -30,7 +30,7 @@
 ### Step 2. 检查模板
 打开 `cover-template.html`，确认：
 - `#cover-photo` 的 `src` 指向 `assets/photo.jpg`
-- 其他元素（`.veil` / `.br-tl` / `.br-br` / `.lockup`）**完全不动**
+- 其他元素（`#cover-canvas` 渐变画框 / `.tag` / `.lockup`）**完全不动**
 - `:root` 里的 CSS 变量**完全不动**（除非用户明确要求调整）
 
 ### Step 3. 渲染并导出
@@ -48,10 +48,10 @@
 
 AI 在执行此 skill 时**绝对不可以**：
 
-1. ❌ 修改 L 角的位置、大小、颜色、粗细
+1. ❌ 修改灰色渐变画框的颜色、角度、厚度
 2. ❌ 修改 Logo 的位置、大小、滤镜
 3. ❌ 修改 wordmark "Brandpulse" 的字体、大小、颜色
-4. ❌ 修改保护渐变 `.veil`
+4. ❌ 修改照片的内嵌位置（top/right/bottom/left）
 5. ❌ 修改 canvas 尺寸或长宽比
 6. ❌ 加新文字（标题、副标题、emoji 等）
 7. ❌ 替换字体
@@ -68,13 +68,16 @@ AI 在执行此 skill 时**绝对不可以**：
 
 | 变量 | 默认 | 含义 |
 |---|---|---|
-| `--bracket-inset` | `36px` | L 角到画面边缘的距离 |
-| `--bracket-size` | `180px` | L 角的腿长 |
-| `--bracket-thickness` | `3px` | L 角线条粗细 |
-| `--veil-top` | `0.35` | 顶部暗化强度 (0–1) |
-| `--veil-bottom` | `0.55` | 底部暗化强度 (0–1) |
-| `--logo-size` | `56px` | Logo 直径 |
-| `--wordmark-size` | `26px` | 品牌名字号 |
+| `--frame-top` | `80px` | 上边框厚度 |
+| `--frame-side` | `80px` | 左右边框厚度 |
+| `--frame-bottom` | `240px` | 下边框厚度（容纳 logo lockup） |
+| `--frame-grad-from` | `#5a5e63` | 渐变起始色（取自 logo 背景偏亮处） |
+| `--frame-grad-to` | `#25282c` | 渐变结束色（取自 logo 背景偏暗处） |
+| `--frame-grad-angle` | `145deg` | 渐变方向（左上 → 右下） |
+| `--logo-size` | `160px` | Logo 直径 |
+| `--logo-inset-x` | `80px` | Logo 距右边距 |
+| `--logo-inset-y` | `40px` | Logo 距底边距 |
+| `--wordmark-size` | `72px` | 品牌名字号 |
 | `--tag-text` | `''` | 顶部小标签文字（空字符串=隐藏） |
 
 ---
@@ -104,14 +107,14 @@ AI 解析模板时应优先扫描 `data-ai-role`，按规则处理。
 → AI: 同上，但把 `--tag-text` 设为 `'Brandpulse · Journal'`。
 
 ### 用例 3：用户要求改样式
-> 用户："L 角再细一点"
+> 用户："边框窄一点"
 
-→ AI: 把 `--bracket-thickness` 从 `3px` 改为 `2px`。**不改其他任何东西。**
+→ AI: 把 `--frame-top` / `--frame-side` 从 `60px` 改为 `48px`（按比例缩 `--frame-bottom`）。**不改其他任何东西。**
 
 ---
 
 ## 未来扩展（v2）
 
-- 支持 Frame 01（画廊框）和 Frame 03（标签条）作为可选模板
+- 支持 Frame 01（画廊框）和 Frame 02（L 角半框）作为可选模板
 - 批量模式：给一组图，一次性生成一组统一封面
 - 自动判断主体位置，调整 logo 落点（如主体在右下角则 logo 移到左上）

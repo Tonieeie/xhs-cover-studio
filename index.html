@@ -42,10 +42,8 @@
   .pick.bupa .badge{background:#fff}
   .pick.bupa .badge::before{content:"";position:absolute;left:0;top:0;width:18%;height:100%;background:var(--brand-bupa)}
   .pick.bupa .badge::after{content:"";position:absolute;left:18%;bottom:0;width:82%;height:18%;background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
-  .pick.bp .badge{background:linear-gradient(160deg,#3a3a3a,#0d0d0d)}
-  .pick.bp .badge::before,.pick.bp .badge::after{content:"";position:absolute;width:18px;height:18px;border:1.5px solid #fff}
-  .pick.bp .badge::before{top:5px;left:5px;border-right:0;border-bottom:0}
-  .pick.bp .badge::after{bottom:5px;right:5px;border-left:0;border-top:0}
+  .pick.bp .badge{background:linear-gradient(145deg,#5a5e63,#25282c)}
+  .pick.bp .badge::before{content:"";position:absolute;top:3px;left:3px;right:3px;bottom:10px;background:linear-gradient(135deg,#aab0b8,#5a6068);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
   .pick .meta{flex:1;min-width:0}
   .pick .name{font-size:14px;font-weight:600;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px}
   .pick .tag{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--ink-3);padding:2px 6px;background:var(--bg);border:1px solid var(--line);border-radius:4px}
@@ -115,9 +113,9 @@
     <button class="pick bp" data-mode="bp">
       <div class="badge"></div>
       <div class="meta">
-        <div class="name">BrandPulse · L-Brackets <span class="tag">v1.0</span></div>
-        <div class="desc">两个对角 L 角 + 渐变保护层 + 右下 wordmark logo。</div>
-        <div class="spec">1200 × 1600 · PNG · 暗化保护层</div>
+        <div class="name">BrandPulse · Gray Frame <span class="tag">v2.0</span></div>
+        <div class="desc">灰色渐变四面画框（取色自 logo 背景）+ 底栏右下 wordmark logo。</div>
+        <div class="spec">1200 × 1600 · PNG · 渐变画框</div>
       </div>
     </button>
   </div>
@@ -269,24 +267,42 @@ async function renderBupa({ sourceImage }) {
 }
 
 /* ============================================================================
-   Renderer 2 — BrandPulse · L-Brackets
-   Translates skills_brandpulse/cover-template.html into Canvas drawing.
+   Renderer 2 — BrandPulse · Gray Frame
+   Wraps the photo on all four sides with a gray gradient frame whose colours
+   are sampled from the logo background. The bottom band is taller to seat
+   the logo lockup. Mirrors skills_brandpulse/cover-template.html.
    ============================================================================ */
 const BP = {
   W: 1200, H: 1600,
-  BRACKET_INSET: 36,
-  BRACKET_SIZE: 180,
-  BRACKET_THICKNESS: 3,
-  VEIL_TOP: 0.35,
-  VEIL_BOTTOM: 0.55,
+  // Gray gradient frame — wraps the photo on all four sides
+  FRAME_TOP: 80,
+  FRAME_SIDE: 80,
+  FRAME_BOTTOM: 240,
+  FRAME_GRAD_FROM: '#5a5e63',
+  FRAME_GRAD_TO:   '#25282c',
+  FRAME_GRAD_ANGLE: 145, // degrees, CSS convention (0 = up, clockwise)
+  // Logo lockup — sits on the bottom band, anchored to the right
   LOGO_SIZE: 160,
   LOGO_GAP: 24,
-  LOGO_INSET_X: 64,
-  LOGO_INSET_Y: 64,
+  LOGO_INSET_X: 80,
+  LOGO_INSET_Y: 40,  // chosen so the lockup is vertically centred in the bottom band
   WORDMARK_SIZE: 72,
   WORDMARK_TEXT: 'Brandpulse',
+  WORDMARK_COLOR: '#f2f2f2',
   LOGO_URL: 'skills_brandpulse/assets/logo.jpg',
 };
+
+// Translate a CSS-style linear-gradient angle into Canvas (x0,y0,x1,y1) endpoints.
+function cssGradientEndpoints(angleDeg, W, H) {
+  const θ = angleDeg * Math.PI / 180;
+  const dx = Math.sin(θ), dy = -Math.cos(θ);
+  const L = Math.abs(W * dx) + Math.abs(H * dy);
+  const cx = W / 2, cy = H / 2;
+  return {
+    x0: cx - dx * L / 2, y0: cy - dy * L / 2,
+    x1: cx + dx * L / 2, y1: cy + dy * L / 2,
+  };
+}
 
 async function renderBrandpulse({ sourceImage }) {
   const W = BP.W, H = BP.H;
@@ -295,40 +311,34 @@ async function renderBrandpulse({ sourceImage }) {
   const ctx = canvas.getContext('2d');
 
   // Make sure Cormorant Garamond is loaded before we measure / draw text.
-  // Falls back silently to serif if Google Fonts aren't reachable.
   try { await document.fonts.load(`500 ${BP.WORDMARK_SIZE}px "Cormorant Garamond"`); } catch (_) {}
 
-  // 1. Photo
-  ctx.fillStyle = '#000';
+  // 1. Gray gradient frame fills the full canvas
+  const ep = cssGradientEndpoints(BP.FRAME_GRAD_ANGLE, W, H);
+  const grad = ctx.createLinearGradient(ep.x0, ep.y0, ep.x1, ep.y1);
+  grad.addColorStop(0, BP.FRAME_GRAD_FROM);
+  grad.addColorStop(1, BP.FRAME_GRAD_TO);
+  ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
+
+  // 2. Photo, inset within the frame on all four sides
+  const photoX = BP.FRAME_SIDE;
+  const photoY = BP.FRAME_TOP;
+  const photoW = W - BP.FRAME_SIDE * 2;
+  const photoH = H - BP.FRAME_TOP - BP.FRAME_BOTTOM;
   const photo = await loadImage(sourceImage);
-  drawCover(ctx, photo, 0, 0, W, H);
+  drawCover(ctx, photo, photoX, photoY, photoW, photoH);
 
-  // 2. Vertical gradient veil (matches the CSS linear-gradient stops)
-  const veil = ctx.createLinearGradient(0, 0, 0, H);
-  veil.addColorStop(0, `rgba(0,0,0,${BP.VEIL_TOP})`);
-  veil.addColorStop(0.26, 'rgba(0,0,0,0)');
-  veil.addColorStop(0.62, 'rgba(0,0,0,0)');
-  veil.addColorStop(1, `rgba(0,0,0,${BP.VEIL_BOTTOM})`);
-  ctx.fillStyle = veil;
-  ctx.fillRect(0, 0, W, H);
+  // 3. Hairline shadow between photo and frame
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(photoX + 0.5, photoY + 0.5, photoW - 1, photoH - 1);
 
-  // 3. L-brackets (top-left + bottom-right)
-  const inset = BP.BRACKET_INSET, size = BP.BRACKET_SIZE, thick = BP.BRACKET_THICKNESS;
-  ctx.fillStyle = '#ffffff';
-  // top-left: top edge + left edge
-  ctx.fillRect(inset, inset, size, thick);
-  ctx.fillRect(inset, inset, thick, size);
-  // bottom-right: bottom edge + right edge
-  const brX = W - inset - size, brY = H - inset - size;
-  ctx.fillRect(brX, brY + size - thick, size, thick);
-  ctx.fillRect(brX + size - thick, brY, thick, size);
-
-  // 4. Logo lockup, bottom-right
+  // 4. Logo lockup, anchored bottom-right within the bottom band
   const logoSize = BP.LOGO_SIZE;
   ctx.font = `500 ${BP.WORDMARK_SIZE}px "Cormorant Garamond", Georgia, serif`;
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = BP.WORDMARK_COLOR;
   // Approximate the CSS letter-spacing:0.04em by widening the measured width.
   const wordW = ctx.measureText(BP.WORDMARK_TEXT).width
     + (BP.WORDMARK_TEXT.length - 1) * BP.WORDMARK_SIZE * 0.04;
@@ -371,7 +381,7 @@ async function renderBrandpulse({ sourceImage }) {
    ============================================================================ */
 const RENDERERS = {
   bupa: { name: 'BUPA · L-Frame', render: renderBupa, w: BUPA.W, h: BUPA.H, ext: 'jpg' },
-  bp:   { name: 'BrandPulse · L-Brackets', render: renderBrandpulse, w: BP.W, h: BP.H, ext: 'png' },
+  bp:   { name: 'BrandPulse · Gray Frame', render: renderBrandpulse, w: BP.W, h: BP.H, ext: 'png' },
 };
 
 const MODE_INFO = {
@@ -385,11 +395,11 @@ const MODE_INFO = {
     ],
   },
   bp: {
-    blurb: '在图片上加两个对角 L 角 + 上下渐变保护层 + 右下 logo + Brandpulse wordmark。优雅的杂志风。',
+    blurb: '把图片用灰色渐变画框四面包裹起来——颜色取自 logo 背景。底栏加宽承载圆形 logo + Brandpulse wordmark。',
     spec: [
-      ['L 角', '36px 内嵌 · 180px 腿长 · 3px 描边'],
-      ['保护渐变', '顶 0.35 / 底 0.55'],
-      ['Logo lockup', '右下 64px 内嵌 · 160px 圆形'],
+      ['画框', '上/左/右 80px · 下 240px'],
+      ['渐变', '#5a5e63 → #25282c · 145°'],
+      ['Logo lockup', '底栏右下 · 160px 圆形'],
       ['Wordmark', 'Cormorant Garamond 72px'],
     ],
   },
