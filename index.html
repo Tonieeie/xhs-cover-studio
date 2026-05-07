@@ -214,6 +214,31 @@ function drawContain(ctx, img, dx, dy, dw, dh) {
   ctx.drawImage(img, dx + (dw - w) / 2, dy + (dh - h) / 2, w, h);
 }
 
+// Single-line diagonal watermark, sized to span ~85% of the photo's diagonal,
+// clipped to the photo box so it never bleeds onto frames or bars.
+function drawDiagonalWatermark(ctx, text, x, y, w, h) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+
+  const diag = Math.sqrt(w * w + h * h);
+  const angle = Math.atan2(h, w); // top-left → bottom-right
+  const fontSize = Math.round(diag * 0.85 / (text.length * 0.55));
+
+  ctx.translate(x + w / 2, y + h / 2);
+  ctx.rotate(angle);
+  ctx.font = `italic 600 ${fontSize}px "Cormorant Garamond", Georgia, serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.fillText(text, 0, 0);
+
+  ctx.restore();
+}
+
+const WATERMARK_TEXT = 'BrandPulse';
+
 /* ============================================================================
    Renderer 1 — BUPA · L-Frame
    Mirrors skills_bupa/skill/compose.js exactly.
@@ -245,6 +270,9 @@ async function renderBupa({ sourceImage }) {
 
   const photoImg = await loadImage(sourceImage);
   drawCover(ctx, photoImg, photoX, photoY, photoW, photoH);
+
+  try { await document.fonts.load(`italic 600 200px "Cormorant Garamond"`); } catch (_) {}
+  drawDiagonalWatermark(ctx, WATERMARK_TEXT, photoX, photoY, photoW, photoH);
 
   ctx.fillStyle = BUPA.BRAND;
   ctx.fillRect(0, 0, leftBarW, H);
@@ -282,11 +310,11 @@ const BP = {
   FRAME_GRAD_TO:   '#25282c',
   FRAME_GRAD_ANGLE: 145, // degrees, CSS convention (0 = up, clockwise)
   // Logo lockup — sits on the bottom band, anchored to the right
-  LOGO_SIZE: 160,
-  LOGO_GAP: 24,
+  LOGO_SIZE: 110,
+  LOGO_GAP: 18,
   LOGO_INSET_X: 80,
-  LOGO_INSET_Y: 40,  // chosen so the lockup is vertically centred in the bottom band
-  WORDMARK_SIZE: 72,
+  LOGO_INSET_Y: 65,  // chosen so the lockup is vertically centred in the bottom band
+  WORDMARK_SIZE: 50,
   WORDMARK_TEXT: 'Brandpulse',
   WORDMARK_COLOR: '#f2f2f2',
   LOGO_URL: 'skills_brandpulse/assets/logo.jpg',
@@ -328,6 +356,8 @@ async function renderBrandpulse({ sourceImage }) {
   const photoH = H - BP.FRAME_TOP - BP.FRAME_BOTTOM;
   const photo = await loadImage(sourceImage);
   drawCover(ctx, photo, photoX, photoY, photoW, photoH);
+
+  drawDiagonalWatermark(ctx, WATERMARK_TEXT, photoX, photoY, photoW, photoH);
 
   // 3. Hairline shadow between photo and frame
   ctx.strokeStyle = 'rgba(0,0,0,0.25)';
@@ -399,8 +429,8 @@ const MODE_INFO = {
     spec: [
       ['画框', '上/左/右 80px · 下 240px'],
       ['渐变', '#5a5e63 → #25282c · 145°'],
-      ['Logo lockup', '底栏右下 · 160px 圆形'],
-      ['Wordmark', 'Cormorant Garamond 72px'],
+      ['Logo lockup', '底栏右下 · 110px 圆形'],
+      ['Wordmark', 'Cormorant Garamond 50px'],
     ],
   },
 };
