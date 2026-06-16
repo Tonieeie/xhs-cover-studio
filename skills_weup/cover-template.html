@@ -1,0 +1,157 @@
+<!doctype html>
+<!--
+================================================================================
+  WeUp · 小红书封面模板（Wave Frame · 黄黑波浪框）
+  AI INSTRUCTIONS — READ THIS BLOCK BEFORE EDITING
+================================================================================
+
+  PURPOSE:
+    Fixed cover template for Xiaohongshu (3:4, 1200×1600 px). Every post stays
+    visually unified under the WeUp brand.
+
+  SIGNATURE LOOK:
+    - A YELLOW (#FFC524) top third holds the WeUp logo (top-left) and leaves
+      open space below it for the user's own headline text.
+    - The divider between the yellow top and the photo is a smooth WAVE, traced
+      by a coral (#FF6F61) seam — never a straight line.
+    - The user's photo fills the zone below, drawn cover-fit so it is NEVER
+      squashed; its edges are naturally hidden under the yellow wave above and
+      the dark wave band below.
+    - A dark (#1A1610) WAVY footer band acts as the bottom border, with a thin
+      yellow hairline and a coral dot accent.
+    - A yellow border frames all four sides → the yellow-black combo edge.
+
+  YOUR JOB AS AN AI:
+    Given ONE input image, produce a finished cover by changing ONLY the photo
+    source (PHOTO_SRC below). Everything else is locked.
+
+  HOW TO USE:
+    1. Save the user's image to:  assets/photo.jpg   (overwrite if exists)
+    2. Set PHOTO_SRC below to 'assets/photo.jpg'.
+    3. Do NOT touch any other knob in the WEUP config unless asked.
+    4. Open this file in a browser; it renders into #cover at native 1200×1600.
+    5. Screenshot / export #cover as the final PNG.
+
+  TEXT & EXTRA IMAGES:
+    The yellow top zone is intentionally left empty (apart from the logo) so the
+    user can drop their headline there afterwards. The photo zone below is where
+    the user's image / extra imagery lives.
+
+================================================================================
+-->
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>WeUp · Cover Template</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px}
+  /* Preview-only scaling. Export #cover at its native 1200×1600. */
+  #cover{box-shadow:0 40px 80px -30px rgba(0,0,0,.6);transform:scale(min(calc((100vw - 80px)/1200),calc((100vh - 80px)/1600)));transform-origin:center}
+</style>
+</head>
+<body>
+
+<canvas id="cover" width="1200" height="1600"></canvas>
+
+<script>
+/* ============================================================
+   LOCKED CONFIG — change values, not rules. AI: only PHOTO_SRC.
+   ============================================================ */
+const PHOTO_SRC = 'assets/photo.jpg';   // <-- the only swappable knob
+
+const WEUP = {
+  W: 1200, H: 1600,
+  YELLOW: '#FFC524',       // brand yellow (logo background)
+  DARK:   '#1A1610',       // brand near-black (logo wordmark)
+  CORAL:  '#FF6F61',       // accent (the dot in the WeUp logo)
+  BORDER: 22,              // outer yellow frame thickness
+  TOP_WAVE_Y: 0.355,       // top divider centreline (fraction of H)
+  TOP_WAVE_AMP: 48,
+  TOP_WAVE_CYCLES: 1.5,
+  TOP_WAVE_PHASE: 0.6,
+  BOTTOM_BAND: 176,        // dark footer band height
+  BOTTOM_WAVE_AMP: 34,
+  BOTTOM_WAVE_CYCLES: 1.5,
+  BOTTOM_WAVE_PHASE: 3.5,
+  SEAM: 12,                // coral seam thickness on the top divider
+  LOGO_SIZE: 248,
+  LOGO_X: 34,
+  LOGO_Y: 24,
+  LOGO_URL: 'assets/logo.png',
+};
+
+function loadImage(src){
+  return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});
+}
+function drawCover(ctx,img,dx,dy,dw,dh){
+  const ir=img.naturalWidth/img.naturalHeight, tr=dw/dh;
+  let sx,sy,sw,sh;
+  if(ir>tr){sh=img.naturalHeight;sw=sh*tr;sx=(img.naturalWidth-sw)/2;sy=0;}
+  else{sw=img.naturalWidth;sh=sw/tr;sx=0;sy=(img.naturalHeight-sh)/2;}
+  ctx.drawImage(img,sx,sy,sw,sh,dx,dy,dw,dh);
+}
+function drawContain(ctx,img,dx,dy,dw,dh){
+  const ir=img.naturalWidth/img.naturalHeight, tr=dw/dh;
+  let w,h;
+  if(ir>tr){w=dw;h=dw/ir;}else{h=dh;w=dh*ir;}
+  ctx.drawImage(img,dx+(dw-w)/2,dy+(dh-h)/2,w,h);
+}
+function weupWavePts(x0,x1,baseY,amp,cycles,phase){
+  const pts=[],steps=140;
+  for(let i=0;i<=steps;i++){const t=i/steps;
+    pts.push([x0+(x1-x0)*t, baseY+Math.sin(t*Math.PI*2*cycles+phase)*amp]);}
+  return pts;
+}
+
+async function render(){
+  const W=WEUP.W,H=WEUP.H,B=WEUP.BORDER;
+  const ctx=document.getElementById('cover').getContext('2d');
+
+  // 0. Yellow fills whole canvas → outer frame on every side.
+  ctx.fillStyle=WEUP.YELLOW; ctx.fillRect(0,0,W,H);
+
+  // 1. Photo, cover-fit (never squashed) into the inner rect.
+  const photo=await loadImage(PHOTO_SRC);
+  drawCover(ctx,photo,B,B,W-B*2,H-B*2);
+
+  // 2. Yellow top region with wavy bottom edge.
+  const topBaseY=H*WEUP.TOP_WAVE_Y;
+  const top=weupWavePts(0,W,topBaseY,WEUP.TOP_WAVE_AMP,WEUP.TOP_WAVE_CYCLES,WEUP.TOP_WAVE_PHASE);
+  ctx.beginPath(); ctx.moveTo(0,0);
+  for(const [x,y] of top) ctx.lineTo(x,y);
+  ctx.lineTo(W,0); ctx.closePath();
+  ctx.fillStyle=WEUP.YELLOW; ctx.fill();
+
+  // 2a. Coral seam along the top wave.
+  ctx.beginPath(); ctx.moveTo(top[0][0],top[0][1]);
+  for(let i=1;i<top.length;i++) ctx.lineTo(top[i][0],top[i][1]);
+  ctx.lineCap='round'; ctx.strokeStyle=WEUP.CORAL; ctx.lineWidth=WEUP.SEAM; ctx.stroke();
+
+  // 3. Dark wavy footer band — the bottom border.
+  const botBaseY=H-WEUP.BOTTOM_BAND;
+  const bot=weupWavePts(B,W-B,botBaseY,WEUP.BOTTOM_WAVE_AMP,WEUP.BOTTOM_WAVE_CYCLES,WEUP.BOTTOM_WAVE_PHASE);
+  ctx.beginPath(); ctx.moveTo(B,H-B);
+  for(const [x,y] of bot) ctx.lineTo(x,y);
+  ctx.lineTo(W-B,H-B); ctx.closePath();
+  ctx.fillStyle=WEUP.DARK; ctx.fill();
+
+  // 3a. Yellow hairline along the footer wave.
+  ctx.beginPath(); ctx.moveTo(bot[0][0],bot[0][1]);
+  for(let i=1;i<bot.length;i++) ctx.lineTo(bot[i][0],bot[i][1]);
+  ctx.strokeStyle=WEUP.YELLOW; ctx.lineWidth=4; ctx.stroke();
+
+  // 3b. Coral dot accent in the footer.
+  const footMidY=(botBaseY+(H-B))/2+WEUP.BOTTOM_WAVE_AMP/2;
+  ctx.beginPath(); ctx.arc(W-B-70,footMidY,11,0,Math.PI*2);
+  ctx.fillStyle=WEUP.CORAL; ctx.fill();
+
+  // 4. Logo, top-left (its yellow bg blends into the band).
+  const logo=await loadImage(WEUP.LOGO_URL);
+  drawContain(ctx,logo,B+WEUP.LOGO_X,B+WEUP.LOGO_Y,WEUP.LOGO_SIZE,WEUP.LOGO_SIZE);
+}
+render();
+</script>
+
+</body>
+</html>
