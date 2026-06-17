@@ -54,6 +54,12 @@
   .pick.weupArch .badge::before{content:"";position:absolute;left:18%;right:18%;top:24%;bottom:18%;background:#3a3632;border-radius:50% 50% 18% 18%/40% 40% 12% 12%;box-shadow:inset 0 0 0 2px #FF6F61}
   .pick.weupHero .badge{background:#3a3632;overflow:hidden}
   .pick.weupHero .badge::after{content:"";position:absolute;left:0;right:0;bottom:0;height:38%;background:#FFC524;border-top:2px solid #FF6F61;border-radius:50% 50% 0 0/80% 80% 0 0}
+  .pick.weupSide .badge{background:#FFC524;overflow:hidden}
+  .pick.weupSide .badge::before{content:"";position:absolute;left:34%;top:0;width:3px;height:78%;background:#FF6F61}
+  .pick.weupSide .badge::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16%;background:#1A1610;border-top:2px solid #FFC524}
+  .pick.weupSpot .badge{background:#FFC524;overflow:hidden}
+  .pick.weupSpot .badge::before{content:"";position:absolute;left:50%;top:40%;width:74%;height:55%;transform:translate(-50%,-50%);border-radius:50%;background:#3a3632;box-shadow:inset 0 0 0 2px #FF6F61}
+  .pick.weupSpot .badge::after{content:"";position:absolute;left:0;right:0;bottom:0;height:18%;background:#1A1610;border-top:2px solid #FFC524}
   .pick .meta{flex:1;min-width:0}
   .pick .name{font-size:14px;font-weight:600;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px}
   .pick .tag{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--ink-3);padding:2px 6px;background:var(--bg);border:1px solid var(--line);border-radius:4px}
@@ -103,7 +109,7 @@
   <div class="crumbs">
     <span class="step">XHS COVER STUDIO</span>
     <span class="dot"></span>
-    <span>6 templates · drop image · download</span>
+    <span>8 templates · drop image · download</span>
   </div>
   <div class="h1">封面工作室 <em>· pick → upload → download</em></div>
   <div class="mono" style="font-size:11px;color:var(--ink-3)" id="canvasMeta">— · —</div>
@@ -158,6 +164,22 @@
         <div class="name">WeUp · Bottom Wave <span class="tag">v1.0</span></div>
         <div class="desc">大图变体：图片铺满上方，底部黄色波浪带放 logo + 文案 + 深色页脚。</div>
         <div class="spec">1200 × 1600 · PNG · 上图下浪</div>
+      </div>
+    </button>
+    <button class="pick weupSide" data-mode="weupSide">
+      <div class="badge"></div>
+      <div class="meta">
+        <div class="name">WeUp · Sidebar <span class="tag">v1.0</span></div>
+        <div class="desc">竖栏变体：左侧黄色竖栏放 logo + 竖排标题，图片铺满右侧，珊瑚竖缝分割 + 深色页脚。</div>
+        <div class="spec">1200 × 1600 · PNG · 左栏右图</div>
+      </div>
+    </button>
+    <button class="pick weupSpot" data-mode="weupSpot">
+      <div class="badge"></div>
+      <div class="meta">
+        <div class="name">WeUp · Spotlight <span class="tag">v1.0</span></div>
+        <div class="desc">圆形变体：图片放进大圆形聚光窗，深色 + 珊瑚双描边，左上 logo，下方深色文案条。</div>
+        <div class="spec">1200 × 1600 · PNG · 圆形聚光</div>
       </div>
     </button>
   </div>
@@ -657,7 +679,66 @@ async function renderWeupHero({ sourceImage }) {
   ctx.beginPath(); ctx.arc(W - B - 66, footY + (H - B - footY) / 2, 11, 0, Math.PI * 2); ctx.fillStyle = WEUP.CORAL; ctx.fill();
 
   const logo = await loadImage(WEUP.LOGO_URL);
-  drawContain(ctx, logo, B + 40, baseY + 40, 236, 236);
+  drawContain(ctx, logo, B + 40, baseY + 64, 236, 236);
+  return new Promise((res) => canvas.toBlob((b) => res({ blob: b, mime: 'image/png', ext: 'png', w: W, h: H }), 'image/png'));
+}
+
+/* ----------------------------------------------------------------------------
+   WeUp variant D — Sidebar: a vertical yellow column on the left holds the logo
+   + a vertical headline space; the photo cover-fits the right area. A coral seam
+   divides the two and a dark footer strip runs along the bottom.
+   ---------------------------------------------------------------------------- */
+async function renderWeupSide({ sourceImage }) {
+  const W = WEUP.W, H = WEUP.H, B = WEUP.BORDER;
+  const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = WEUP.YELLOW; ctx.fillRect(0, 0, W, H);
+
+  const colW = Math.round(W * 0.34);   // left yellow column width (border included)
+  const footY = H - 150;               // dark footer strip top
+  const photo = await loadImage(sourceImage);
+  drawCover(ctx, photo, colW, B, W - B - colW, footY - B);
+
+  // Coral seam dividing the yellow column from the photo.
+  ctx.beginPath(); ctx.moveTo(colW, B); ctx.lineTo(colW, footY);
+  ctx.lineCap = 'round'; ctx.strokeStyle = WEUP.CORAL; ctx.lineWidth = 12; ctx.stroke();
+
+  // Dark footer strip with a yellow hairline + coral dot.
+  ctx.fillStyle = WEUP.DARK; ctx.fillRect(B, footY, W - 2 * B, H - B - footY);
+  ctx.fillStyle = WEUP.YELLOW; ctx.fillRect(B, footY, W - 2 * B, 4);
+  ctx.beginPath(); ctx.arc(W - B - 66, footY + (H - B - footY) / 2, 11, 0, Math.PI * 2); ctx.fillStyle = WEUP.CORAL; ctx.fill();
+
+  const logo = await loadImage(WEUP.LOGO_URL);
+  drawContain(ctx, logo, B + 30, B + 24, 240, 240);
+  return new Promise((res) => canvas.toBlob((b) => res({ blob: b, mime: 'image/png', ext: 'png', w: W, h: H }), 'image/png'));
+}
+
+/* ----------------------------------------------------------------------------
+   WeUp variant E — Spotlight: the photo sits inside a big circle on a yellow
+   field, ringed in dark + coral. Logo top-left, headline space below the circle,
+   dark caption footer at the bottom.
+   ---------------------------------------------------------------------------- */
+async function renderWeupSpot({ sourceImage }) {
+  const W = WEUP.W, H = WEUP.H, B = WEUP.BORDER;
+  const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = WEUP.YELLOW; ctx.fillRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H * 0.45, R = W * 0.37;
+  const photo = await loadImage(sourceImage);
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
+  drawCover(ctx, photo, cx - R, cy - R, R * 2, R * 2); ctx.restore();
+
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.lineWidth = 12; ctx.strokeStyle = WEUP.DARK; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, R - 12, 0, Math.PI * 2); ctx.lineWidth = 3; ctx.strokeStyle = WEUP.CORAL; ctx.stroke();
+
+  const footY = H - 176;
+  ctx.fillStyle = WEUP.DARK; ctx.fillRect(B, footY, W - 2 * B, H - B - footY);
+  ctx.fillStyle = WEUP.YELLOW; ctx.fillRect(B, footY, W - 2 * B, 4);
+  ctx.beginPath(); ctx.arc(W - B - 70, footY + (H - B - footY) / 2, 11, 0, Math.PI * 2); ctx.fillStyle = WEUP.CORAL; ctx.fill();
+
+  const logo = await loadImage(WEUP.LOGO_URL);
+  drawContain(ctx, logo, 44, 40, 236, 236);
   return new Promise((res) => canvas.toBlob((b) => res({ blob: b, mime: 'image/png', ext: 'png', w: W, h: H }), 'image/png'));
 }
 
@@ -671,6 +752,8 @@ const RENDERERS = {
   weupSlant: { name: 'WeUp · Slant', render: renderWeupSlant, w: WEUP.W, h: WEUP.H, ext: 'png' },
   weupArch:  { name: 'WeUp · Arch Window', render: renderWeupArch, w: WEUP.W, h: WEUP.H, ext: 'png' },
   weupHero:  { name: 'WeUp · Bottom Wave', render: renderWeupHero, w: WEUP.W, h: WEUP.H, ext: 'png' },
+  weupSide:  { name: 'WeUp · Sidebar', render: renderWeupSide, w: WEUP.W, h: WEUP.H, ext: 'png' },
+  weupSpot:  { name: 'WeUp · Spotlight', render: renderWeupSpot, w: WEUP.W, h: WEUP.H, ext: 'png' },
 };
 
 const MODE_INFO = {
@@ -734,6 +817,28 @@ const MODE_INFO = {
       ['Logo', '黄带内左下'],
       ['页脚', '深色条 · 黄发丝线'],
       ['裁剪', '居中 cover-fit 不压缩'],
+    ],
+  },
+  weupSide: {
+    blurb: '竖栏变体：左侧 34% 黄色竖栏放 logo + 竖排标题，图片 cover-fit 铺满右侧。珊瑚竖缝分割左右，底部深色页脚条。适合人像或竖向图片。',
+    spec: [
+      ['版式', '左黄栏 34% · 右图'],
+      ['配色', '#FFC524 黄 + #1A1610 黑'],
+      ['点缀', '珊瑚竖缝 + 圆点'],
+      ['Logo', '左栏顶部 240px'],
+      ['页脚', '深色条 · 黄发丝线'],
+      ['裁剪', '居中 cover-fit 不压缩'],
+    ],
+  },
+  weupSpot: {
+    blurb: '圆形变体：图片放进居中大圆形聚光窗，深色 11px + 珊瑚内线双描边。左上 logo，圆下方留白打标题，底部深色文案条。聚焦感强。',
+    spec: [
+      ['版式', '居中圆形聚光窗'],
+      ['配色', '#FFC524 黄 + #1A1610 黑'],
+      ['描边', '深色 12px + 珊瑚内线'],
+      ['Logo', '左上 236px'],
+      ['页脚', '深色条 · 黄发丝线'],
+      ['裁剪', '圆内 cover-fit 不压缩'],
     ],
   },
 };

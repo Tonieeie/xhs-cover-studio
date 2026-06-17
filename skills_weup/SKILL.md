@@ -26,7 +26,7 @@
 
 ## 模板文件
 - `cover-template.html` — 主模板（Wave Frame · 黄黑波浪框），用内嵌 canvas 脚本渲染。
-- `cover-template-variants.html` — **多变体合集**：一个文件里四种黄黑版式，改顶部 `LAYOUT` 一个常量即可切换。
+- `cover-template-variants.html` — **多变体合集**：一个文件里六种黄黑版式，改顶部 `LAYOUT` 一个常量即可切换。
 - `assets/logo.png` — WeUp 品牌 Logo（永远不动）。
 - `assets/photo.jpg` — 当前封面用的图（每次被替换）。
 
@@ -40,10 +40,12 @@
 | `slant` | Slant 斜切 | 黄色顶区斜线收口（珊瑚缝）+ 反向深色斜带页脚，更有动感。 |
 | `arch` | Arch Window 拱窗 | 图片放进圆拱窗口，黄底 + 深色描边 + 珊瑚内线，杂志感。 |
 | `bottomwave` | Bottom Wave 大图 | 图片当主角铺满上方，底部黄色波浪带放 logo + 文案 + 深色页脚。 |
+| `side` | Sidebar 竖栏 | 左侧 34% 黄色竖栏放 logo + 竖排标题，图片铺满右侧，珊瑚竖缝分割 + 深色页脚。 |
+| `spot` | Spotlight 圆形 | 图片放进居中大圆形聚光窗，深色 + 珊瑚双描边，左上 logo，下方深色文案条。 |
 
-四种都遵循同一规则：图片 **cover-fit 不压缩**、被品牌形状自然盖住；黄色区留白给用户后期打标题。
+六种都遵循同一规则：图片 **cover-fit 不压缩**、被品牌形状自然盖住；黄色区留白给用户后期打标题。
 切换方法：打开 `cover-template-variants.html`，把顶部 `const LAYOUT = 'wave'` 改成想要的值。
-网页版工作室 `../index.html` 里这四种都已内置成独立卡片，拖图即可预览/下载。
+网页版工作室 `../index.html` 里这六种都已内置成独立卡片，拖图即可预览/下载。
 
 ---
 
