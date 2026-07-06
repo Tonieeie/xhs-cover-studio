@@ -413,20 +413,24 @@ async function renderBrandpulse({ sourceImage }) {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // 2. Photo, inset within the frame on all four sides
+  // 2. Photo, inset within the frame on all four sides — drawn contain-fit
+  //    (full image, centred, never cropped; the gradient shows through the
+  //    letterbox when the ratios differ). Watermark hugs the actual image.
   const photoX = BP.FRAME_SIDE;
   const photoY = BP.FRAME_TOP;
   const photoW = W - BP.FRAME_SIDE * 2;
   const photoH = H - BP.FRAME_TOP - BP.FRAME_BOTTOM;
   const photo = await loadImage(sourceImage);
-  drawCover(ctx, photo, photoX, photoY, photoW, photoH);
+  const photoRatio = photo.naturalWidth / photo.naturalHeight;
+  const boxRatio = photoW / photoH;
+  let imgW, imgH;
+  if (photoRatio > boxRatio) { imgW = photoW; imgH = photoW / photoRatio; }
+  else { imgH = photoH; imgW = photoH * photoRatio; }
+  const imgX = photoX + (photoW - imgW) / 2;
+  const imgY = photoY + (photoH - imgH) / 2;
+  ctx.drawImage(photo, imgX, imgY, imgW, imgH);
 
-  drawDiagonalWatermark(ctx, WATERMARK_TEXT, photoX, photoY, photoW, photoH);
-
-  // 3. Hairline shadow between photo and frame
-  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(photoX + 0.5, photoY + 0.5, photoW - 1, photoH - 1);
+  drawDiagonalWatermark(ctx, WATERMARK_TEXT, imgX, imgY, imgW, imgH);
 
   // 4. Logo lockup, anchored bottom-right within the bottom band
   const logoSize = BP.LOGO_SIZE;
