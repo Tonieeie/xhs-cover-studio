@@ -112,12 +112,11 @@
     position:absolute;
     top: var(--frame-top);
     left: var(--frame-side);
-    right: var(--frame-side);
-    bottom: var(--frame-bottom);
-    width:auto;height:auto;
-    object-fit:cover;object-position:center;
+    width: calc(100% - var(--frame-side) * 2);
+    height: calc(100% - var(--frame-top) - var(--frame-bottom));
+    /* Show the full image centred — never crop (user request 2026-07) */
+    object-fit:contain;object-position:center;
     display:block;
-    box-shadow: var(--frame-inner-shadow);
   }
 
   /* Optional top tag — sits centred within the top frame band */
