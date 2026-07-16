@@ -56,6 +56,9 @@
   .pick.bupaSplit .badge{background:#fff;overflow:hidden}
   .pick.bupaSplit .badge::before{content:"";position:absolute;left:0;top:0;width:40%;height:100%;background:var(--brand-bupa)}
   .pick.bupaSplit .badge::after{content:"";position:absolute;right:0;top:0;width:60%;height:100%;background:#ddd}
+  .pick.bupaWave .badge{background:#ddd;overflow:hidden}
+  .pick.bupaWave .badge::before{content:"";position:absolute;left:0;bottom:0;width:100%;height:38%;background:var(--brand-bupa);border-top:2px solid #fff;border-radius:50% 50% 0 0/80% 80% 0 0}
+  .pick.bupaWave .badge::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:16%;background:#fff}
   .pick.bp .badge{background:linear-gradient(145deg,#5a5e63,#25282c)}
   .pick.bp .badge::before{content:"";position:absolute;top:3px;left:3px;right:3px;bottom:10px;background:linear-gradient(135deg,#aab0b8,#5a6068);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
   .pick.weup .badge{background:#FFC524}
@@ -123,7 +126,7 @@
   <div class="crumbs">
     <span class="step">XHS COVER STUDIO</span>
     <span class="dot"></span>
-    <span>13 templates · drop image · download</span>
+    <span>14 templates · drop image · download</span>
   </div>
   <div class="h1">封面工作室 <em>· pick → upload → download</em></div>
   <div class="mono" style="font-size:11px;color:var(--ink-3)" id="canvasMeta">— · —</div>
@@ -177,6 +180,14 @@
       <div class="meta">
         <div class="name">BUPA · Split <span class="tag">v1.0</span></div>
         <div class="desc">左 40% 蓝色品牌区居中放 logo，右 60% 图片。大胆对半分割。</div>
+        <div class="spec">1242 × 1656 · JPG · #0E5BA8</div>
+      </div>
+    </button>
+    <button class="pick bupaWave" data-mode="bupaWave">
+      <div class="badge"></div>
+      <div class="meta">
+        <div class="name">BUPA · Bottom Wave <span class="tag">v1.0</span></div>
+        <div class="desc">图片铺满上方，底部蓝色波浪带放 logo，白色页脚条。大图 + 品牌波浪。</div>
         <div class="spec">1242 × 1656 · JPG · #0E5BA8</div>
       </div>
     </button>
@@ -618,6 +629,61 @@ async function renderBupaSplit({ sourceImage }) {
 }
 
 /* ============================================================================
+   Renderer 1g — BUPA · Bottom Wave
+   Photo hero fills the top, a blue wavy band sits at the bottom with the logo,
+   and a white footer strip anchors the base. Same wave geometry as WeUp Hero
+   but in BUPA blue + white palette.
+   ============================================================================ */
+async function renderBupaWave({ sourceImage }) {
+  const W = BUPA.W, H = BUPA.H;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Fill canvas white (becomes the outer frame / footer)
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, W, H);
+
+  // Photo, cover-fit into full canvas (edges hidden by the wave + footer)
+  const photo = await loadImage(sourceImage);
+  drawCover(ctx, photo, 0, 0, W, H);
+
+  // Blue wave band — covers from ~66% down to the footer
+  const baseY = H * 0.66;
+  const wavePts = weupWavePts(0, W, baseY, 52, 1.5, 0.6);
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (const [x, y] of wavePts) ctx.lineTo(x, y);
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fillStyle = BUPA.BRAND;
+  ctx.fill();
+
+  // White hairline tracing the wave crest
+  ctx.beginPath();
+  ctx.moveTo(wavePts[0][0], wavePts[0][1]);
+  for (let i = 1; i < wavePts.length; i++) ctx.lineTo(wavePts[i][0], wavePts[i][1]);
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  // Logo in the blue wave band, bottom-left
+  const logoImg = await loadImage(BUPA.LOGO_URL);
+  const bandH = H - Math.round(baseY);
+  const logoSize = Math.round(bandH * 0.45);
+  const logoInset = Math.round(W * BUPA.LOGO_INSET_PCT / 100);
+  const logoX = logoInset;
+  const logoY = H - logoSize - Math.round(bandH * 0.15);
+  drawContain(ctx, logoImg, logoX, logoY, logoSize, logoSize);
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve({ blob, mime: 'image/jpeg', ext: 'jpg', w: W, h: H }),
+      'image/jpeg', BUPA.JPEG_QUALITY);
+  });
+}
+
+/* ============================================================================
    Renderer 2 — BrandPulse · Gray Frame
    Wraps the photo on all four sides with a gray gradient frame whose colours
    are sampled from the logo background. The bottom band is taller to seat
@@ -1015,6 +1081,7 @@ const RENDERERS = {
   bupaFrame:  { name: 'BUPA · Full Frame', render: renderBupaFrame, w: BUPA.W, h: BUPA.H, ext: 'jpg' },
   bupaCorner: { name: 'BUPA · Corner Badge', render: renderBupaCorner, w: BUPA.W, h: BUPA.H, ext: 'jpg' },
   bupaSplit:  { name: 'BUPA · Split', render: renderBupaSplit, w: BUPA.W, h: BUPA.H, ext: 'jpg' },
+  bupaWave:   { name: 'BUPA · Bottom Wave', render: renderBupaWave, w: BUPA.W, h: BUPA.H, ext: 'jpg' },
   weup:       { name: 'WeUp · Wave Frame', render: renderWeup, w: WEUP.W, h: WEUP.H, ext: 'png' },
   weupSlant:  { name: 'WeUp · Slant', render: renderWeupSlant, w: WEUP.W, h: WEUP.H, ext: 'png' },
   weupArch:   { name: 'WeUp · Arch Window', render: renderWeupArch, w: WEUP.W, h: WEUP.H, ext: 'png' },
@@ -1076,6 +1143,15 @@ const MODE_INFO = {
       ['品牌区', '左 40% · #0E5BA8'],
       ['图片区', '右 60% · cover-fit'],
       ['Logo', '品牌区居中 · 45% 宽'],
+      ['裁剪', '居中 cover-fit'],
+    ],
+  },
+  bupaWave: {
+    blurb: '大图变体：图片铺满上方当主角，底部蓝色波浪带过渡，logo 嵌入蓝色区域。适合图片本身够强的封面。',
+    spec: [
+      ['版式', '上图 · 下蓝波浪带'],
+      ['波浪', '66% 处 · 白色描边'],
+      ['Logo', '蓝带左下 · 45% 高'],
       ['裁剪', '居中 cover-fit'],
     ],
   },
